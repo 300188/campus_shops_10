@@ -20,5 +20,5 @@
   3）登录模块</br>
   4）...</br>
   
-<h3>版本2.0 @link</h3></br> 
+<h3>版本2.0 @link to https://github.com/xiezengcheng/campus_shops_20 </h3></br> 
   
