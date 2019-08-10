@@ -1,0 +1,56 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.edu.mju.dao.ProductCategoryDao">
+
+
+    <!-- 根据店铺id 和 类别id删除  -->
+    <delete id="deleteProductCategory" >
+
+        DELETE
+        FORM
+        t_product_category
+        WHERE
+        product_category_id = #{productCategoryId}
+        AND
+        shopId = #{shopId}
+
+    </delete>
+
+
+
+    <!-- 批量增加商品分类 -->
+
+    <insert id="batchInsertProductCategory" parameterType="cn.edu.mju.entity.ProductCategory">
+
+        INSERT INTO
+        t_product_category(product_category_name,
+        priority,create_time,shop_id)
+        VALUES
+        <foreach collection="productCategoryList" item="productCategory" index="index" separator=",">
+            (
+              #{productCategory.productCategoryName},
+              #{productCategory.priority},
+              #{productCategory.createTime},
+              #{productCategory.shopId}
+            )
+        </foreach>
+    </insert>
+
+
+    <!-- 根据店铺id 查询商品分类 -->
+    <select id="queryProductCategory" resultType="cn.edu.mju.entity.ProductCategory" parameterType="long">
+        SELECT
+        product_category_id,shop_id,product_category_name,
+        priority,create_time
+        FROM
+        t_product_category
+        WHERE
+        shop_id = #{shopId}
+        ORDER BY
+        priority DESC
+    </select>
+
+
+</mapper>

@@ -1,0 +1,59 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.edu.mju.dao.HeadLineDao">
+
+
+    <select id="queryHeadLine" resultType="cn.edu.mju.entity.HeadLine">
+        SELECT
+        line_id,
+        line_name,
+        line_link,
+        line_img,
+        priority,
+        enable_status,
+        create_time,
+        last_edit_time
+        FROM
+        t_head_line
+        <where>
+            <if test="headLineCondition.enableStatus!=null">
+                and enable_status = #{headLineCondition.enableStatus}
+            </if>
+        </where>
+        ORDER BY
+        priority DESC
+    </select>
+
+    <select id="queryHeadLineById" resultType="cn.edu.mju.entity.HeadLine">
+		SELECT
+		line_id,
+		line_name,
+		line_link,
+		line_img,
+		priority,
+		enable_status,
+		create_time,
+		last_edit_time
+		FROM
+		t_head_line
+		WHERE
+		line_id = #{lineId}
+	</select>
+
+
+    <insert id="insertHeadLine" useGeneratedKeys="true" keyProperty="lineId"
+            keyColumn="line_id">
+		INSERT INTO
+		t_head_line(line_name,line_link,line_img,priority,
+		enable_status,
+		create_time,last_edit_time)
+		VALUES
+		(#{lineName},#{lineLink},#{lineImg},#{priority},
+		#{enableStatus},#{createTime},#{lastEditTime})
+	</insert>
+
+
+
+</mapper>

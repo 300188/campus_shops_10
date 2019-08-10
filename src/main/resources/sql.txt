@@ -1,0 +1,310 @@
+use campusdb;
+-- 区域表
+create table t_area (
+	area_id bigint(20) NOT NULL AUTO_INCREMENT,
+    area_name varchar(255) NOT NULL COMMENT '区域名称',
+    priority int(4) DEFAULT 0 COMMENT '权重',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+    last_edit_time bigint(20) DEFAULT NULL COMMENT '更新时间',
+	PRIMARY KEY(area_id),
+	unique key UK_AREA(area_name)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+-- 用户信息
+create table t_person_info (
+	user_id bigint(20) NOT NULL AUTO_INCREMENT,
+    name varchar(45) DEFAULT NULL COMMENT '名称',
+    image varchar(1024) DEFAULT NULL COMMENT '图片地址',
+    email varchar(1024) DEFAULT NULL COMMENT '邮箱',
+    gender varchar(4) DEFAULT NULL COMMENT '性别',
+    enable_status int(2) DEFAULT 0 COMMENT '0 禁止使用 1 允许使用',
+    user_type int(2) DEFAULT 1 COMMENT '1 顾客 2 店家 3 超级管理员',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+    last_edit_time bigint(20) DEFAULT NULL COMMENT '更新时间',
+	PRIMARY KEY(user_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+-- 微信号表
+create table t_wechat_auth (
+	wechat_auth_id bigint(20) NOT NULL AUTO_INCREMENT,
+    user_id bigint(20) NOT NULL,
+    open_id varchar(1024) NOT NULL COMMENT 'openid',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+	PRIMARY KEY(wechat_auth_id),
+	constraint fk_wechatauth_profile foreign key(user_id) references t_person_info(user_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+alter table t_wechat_auth add unique index(open_id);
+
+-- 本地账号
+create table t_local_auth (
+	local_auth_id bigint(20) NOT NULL AUTO_INCREMENT,
+    user_id bigint(20) NOT NULL,
+    username varchar(128) NOT NULL,
+    password varchar(128) NOT NULL,
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+	last_edit_time bigint(20) DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY(local_auth_id),
+    UNIQUE KEY uk_local_profile (username),
+	constraint fk_lacalauth_profile foreign key(user_id) references t_person_info(user_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+-- 头条表
+create table t_head_line (
+	line_id bigint(20) NOT NULL AUTO_INCREMENT,
+    line_name varchar(1024) DEFAULT NULL COMMENT '头像名',
+    line_link varchar(2000) DEFAULT NULL COMMENT '头条链接',
+    line_img varchar(2000) DEFAULT NULL COMMENT '头条图片',
+	priority int(4) DEFAULT 0 COMMENT '权重',
+	enable_status int(2) DEFAULT 0 COMMENT '0 禁止使用 1 允许使用',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+	last_edit_time bigint(20) DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY(line_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+-- 商品类别表
+create table t_shop_category (
+	shop_category_id bigint(20) NOT NULL AUTO_INCREMENT,
+    shop_category_name varchar(100) DEFAULT "" COMMENT '商品类别名',
+    shop_category_desc varchar(1000) DEFAULT '' COMMENT '商品类别描述',
+    shop_category_img varchar(2000) DEFAULT NULL COMMENT '商品类别图片',
+	priority int(4) DEFAULT 0 COMMENT '权重',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+	last_edit_time bigint(20) DEFAULT NULL COMMENT '更新时间',
+    parent_id bigint(20) DEFAULT NULL,
+    PRIMARY KEY(shop_category_id),
+    CONSTRAINT fk_shop_category_self FOREIGN KEY(parent_id) REFERENCES t_shop_category(shop_category_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+-- 店铺表
+create table t_shop (
+	shop_id bigint(20) NOT NULL AUTO_INCREMENT,
+	owner_id bigint(20) NOT NULL ,
+	area_id bigint(20) NOT NULL ,
+	shop_category_id bigint(20) NOT NULL ,
+    shop_name varchar(256) DEFAULT "" COMMENT '店铺名称',
+    shop_desc varchar(1024) DEFAULT NULL COMMENT '描述',
+    shop_addr varchar(200) DEFAULT NULL COMMENT '地址',
+    phone varchar(128) DEFAULT NULL COMMENT '电话',
+    shop_img varchar(1024) DEFAULT NULL COMMENT '图片',
+	priority int(4) DEFAULT 0 COMMENT '权重',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+	last_edit_time bigint(20) DEFAULT NULL COMMENT '更新时间',
+	enable_status int(2) DEFAULT 0 COMMENT ' -1 不可用 0 审核中 1 允许使用',
+    advice varchar(255) DEFAULT NULL COMMENT '建议',
+    PRIMARY KEY(shop_id),
+    CONSTRAINT fk_shop_area FOREIGN KEY(area_id) REFERENCES t_area(area_id) ,
+    CONSTRAINT fk_shop_profile FOREIGN KEY(owner_id) REFERENCES t_person_info(user_id) ,
+    CONSTRAINT fk_shop_shopcate FOREIGN KEY(shop_category_id) REFERENCES t_shop_category(shop_category_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+-- 商品类别表
+create table t_product_category (
+	product_category_id bigint(20) NOT NULL AUTO_INCREMENT,
+    product_category_name varchar(100) NOT NULL  COMMENT '名称',
+	priority int(4) DEFAULT 0 COMMENT '权重',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+    shop_id bigint(20) DEFAULT 0,
+
+    PRIMARY KEY(product_category_id),
+    CONSTRAINT fk_procate_shop FOREIGN KEY(shop_id) REFERENCES t_shop(shop_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+-- 商品表
+create table t_product (
+	product_id bigint(20) NOT NULL AUTO_INCREMENT,
+	product_name varchar(255) NOT NULL ,
+    product_desc varchar(2000) DEFAULT NULL COMMENT '描述',
+    img_addr varchar(2000) DEFAULT NULL COMMENT '图片',
+    normal_price varchar(100) DEFAULT NULL COMMENT '正常价格',
+    promotion_price varchar(100) DEFAULT NULL COMMENT '折扣价格',
+	priority int(4) DEFAULT 0 COMMENT '权重',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+	last_edit_time bigint(20) DEFAULT NULL COMMENT '更新时间',
+	enable_status int(2) DEFAULT 0 COMMENT ' -1 不可用 0 下架 1 允许使用',
+	product_category_id bigint(20) DEFAULT NULL,
+    shop_id bigint(20) NOT NULL DEFAULT 0,
+    point int(10) DEFAULT 0,
+    PRIMARY KEY(product_id),
+    CONSTRAINT fk_product_procate FOREIGN KEY(product_category_id) REFERENCES t_product_category(product_category_id) ,
+    CONSTRAINT fk_product_shop FOREIGN KEY(shop_id) REFERENCES t_shop(shop_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+
+-- 商品详情图片
+
+create table t_product_img (
+	product_img_id bigint(20) NOT NULL AUTO_INCREMENT,
+    img_addr varchar(2000) DEFAULT NULL  COMMENT '图片地址',
+    img_desc varchar(2000) DEFAULT NULL  COMMENT '图片描述',
+	priority int(4) DEFAULT 0 COMMENT '权重',
+    create_time bigint(20) DEFAULT NULL COMMENT '创建时间',
+    product_id bigint(20) NOT NULL,
+    PRIMARY KEY(product_img_id),
+    CONSTRAINT fk_proming_product FOREIGN KEY(product_id) REFERENCES t_product(product_id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = utf8;
+
+--  积分表
+CREATE TABLE t_award(
+    award_id bigint(20) NOT NULL AUTO_INCREMENT,
+    award_name varchar(256) COLLATE utf8_unicode_ci NOT NULL,
+    award_desc varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL,
+    award_img varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL,
+    point int(10)  DEFAULT 0,
+    priority int(2) DEFAULT NULL,
+    create_time bigint(20) DEFAULT NULL,
+    last_edit_time bigint(20) DEFAULT NULL,
+    enbale_status int(2) DEFAULT 0,
+    shop_id bigint(20) DEFAULT NULL,
+    PRIMARY KEY (award_id),
+    KEY fk_award_shop_idx(shop_id),
+    CONSTRAINT fk_award_shop FOREIGN KEY (shop_id) REFERENCES
+    t_shop(shop_id)
+
+)ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+-- 奖品映射
+
+CREATE TABLE t_user_award_map(
+    user_award_id bigint(20) NOT NULL AUTO_INCREMENT,
+    user_id bigint(20) NOT NULL,
+    award_id bigint(20) NOT NULL,
+    shop_id bigint(20) NOT NULL,
+    operator_id bigint(20) DEFAULT NULL,
+    create_time bigint(20) DEFAULT NULL,
+    used_status int(2) DEFAULT 0,
+    point int(10)  DEFAULT 0,
+    PRIMARY KEY (user_award_id),
+    KEY fk_user_award_map_profile(user_id),
+    KEY fk_user_award_map_award(award_id),
+    KEY fk_user_award_map_shop(shop_id),
+    CONSTRAINT fk_user_award_map_award FOREIGN KEY (award_id) REFERENCES
+    t_award(award_id),
+    CONSTRAINT fk_user_award_map_profile FOREIGN KEY(user_id) references
+    t_person_info(user_id),
+    CONSTRAINT fk_user_award_map_shop FOREIGN KEY(shop_id) references
+    t_shop(shop_id),
+    CONSTRAINT fk_user_award_map_operator FOREIGN KEY(operator_id) references
+    t_person_info(user_id)
+
+)ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+-- 商品和顾客的映射
+
+CREATE TABLE t_user_product_map(
+    user_product_id bigint(20) NOT NULL AUTO_INCREMENT,
+    user_id bigint(20) DEFAULT NULL,
+    product_id bigint(20) DEFAULT NULL,
+    shop_id bigint(20) DEFAULT NULL,
+    operator_id bigint(20) DEFAULT NULL,
+    create_time bigint(20) DEFAULT NULL,
+    used_status int(2) DEFAULT 0,
+    point int(10)  DEFAULT 0,
+    PRIMARY KEY (user_product_id),
+    KEY fk_user_product_map_profile(user_id),
+    KEY fk_user_product_map_product(product_id),
+    KEY fk_user_product_map_shop(shop_id),
+    KEY fk_user_product_map_operator(operator_id),
+    CONSTRAINT fk_user_product_map_product FOREIGN KEY (product_id) REFERENCES
+    t_product(product_id),
+    CONSTRAINT fk_user_product_map_profile FOREIGN KEY(user_id) references
+    t_person_info(user_id),
+    CONSTRAINT fk_user_product_map_shop FOREIGN KEY(shop_id) references
+    t_shop(shop_id),
+    CONSTRAINT fk_user_product_map_operator FOREIGN KEY(operator_id) references
+    t_person_info(user_id)
+
+)ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+--  顾客店铺积分映射
+
+CREATE TABLE t_user_shop_map(
+    user_shop_id bigint(20) NOT NULL AUTO_INCREMENT,
+    user_id bigint(20) DEFAULT NULL,
+    shop_id bigint(20) DEFAULT NULL,
+    createTime bigint(20) DEFAULT NULL,
+    point int(10)  DEFAULT 0,
+    PRIMARY KEY (user_shop_id),
+    UNIQUE KEY uq_user_shop(user_id,shop_id),
+    KEY fk_user_shop_shop(shop_id),
+
+    CONSTRAINT fk_user_shop_shop FOREIGN KEY (shop_id) REFERENCES
+    t_shop(shop_id),
+
+    CONSTRAINT fk_user_shop_user FOREIGN KEY(user_id) references
+    t_person_info(user_id)
+
+)ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+--  顾客消费的商品映射
+
+CREATE TABLE t_product_sell_daily(
+
+    product_sell_daily_id  bigint(20) NOT NULL AUTO_INCREMENT,
+    product_id bigint(20) DEFAULT NULL,
+    shop_id bigint(20) DEFAULT NULL,
+    createTime bigint(20) DEFAULT NULL,
+    total int(10)  DEFAULT 0,
+
+    PRIMARY KEY (product_sell_daily_id),
+
+    KEY fk_product_sell_product(product_id),
+    KEY fk_product_sell_shop(shop_id),
+
+    CONSTRAINT fk_product_sell_product FOREIGN KEY (product_id) REFERENCES
+    t_product(product_id),
+
+    CONSTRAINT fk_product_sell_shop FOREIGN KEY(shop_id) references
+    t_shop(shop_id)
+
+)ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+-- 店铺授权
+
+
+CREATE TABLE t_shop_auth_map(
+
+    shop_auth_id  bigint(20) NOT NULL AUTO_INCREMENT,
+    employee_id bigint(20) DEFAULT NULL,
+    shop_id bigint(20) DEFAULT NULL,
+    title varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    title_flag int(2) DEFAULT NULL,
+    createTime bigint(20) DEFAULT NULL,
+    last_edit_time bigint(20) DEFAULT NULL,
+    enable_status int(2)  DEFAULT 0,
+
+    PRIMARY KEY (shop_auth_id),
+
+    KEY fk_shop_auth_map_shop(shop_id),
+    KEY uk_shop_auth_map(employee_id,shop_id),
+
+    CONSTRAINT fk_shop_auth_map_employee FOREIGN KEY (employee_id) REFERENCES
+    t_person_info(user_id),
+
+    CONSTRAINT fk_shop_auth_map_shop FOREIGN KEY(shop_id) references
+    t_shop(shop_id)
+
+)ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+
+    <!--开启mvc注解模式-->
+    <mvc:annotation-driven/>
+
+    <mvc:resources mapping="/resources/**" location="/resources/"/>
+    <mvc:default-servlet-handler/>
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+
+        <property name="prefix" value="/WEB-INF/html"/>
+        <property name="suffix" value=".html"/>
+
+    </bean>
+
+    <context:component-scan base-package="cn.edu.mju.web"/>
+
+    <!--文件上传解析器-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+
+        <property name="defaultEncoding" value="urf-8"/>
+        <property name="maxUploadSize" value="20971520"/>
+        <property name="maxInMemorySize" value="20971520"/>
+
+    </bean>
+
+
+    <!--权限拦截器-->
+
+    <mvc:interceptors>
+        <!--检查是否已经登录了店家管理系统的拦截器-->
+        <mvc:interceptor>
+            <mvc:mapping path="/shop/**"/>
+            <bean id="shopInterceptor" class="cn.edu.mju.web.interceptor.ShopLoginInterceptor"></bean>
+        </mvc:interceptor>
+
+        <!-- 检查是否对该店铺有操作权限的拦截器 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/shop/**"/>
+
+            <mvc:exclude-mapping path="/shop/shoplist"/>
+            
+            <mvc:exclude-mapping path="/shop/getshoplist"/>
+
+            <mvc:exclude-mapping path="/shop/getshopinitinfo"/>
+            <mvc:exclude-mapping path="/shop/registershop"/>
+            <mvc:exclude-mapping path="/shop/shopoperation"/>
+            <mvc:exclude-mapping path="/shop/shopmanage"/>
+            <mvc:exclude-mapping path="/shop/getshopmanagementinfo"/>
+
+
+
+
+            <bean id="shopPermissionInterceptor" class="cn.edu.mju.web.interceptor.ShopPermissionInterceptor"/>
+        </mvc:interceptor>
+        
+
+    </mvc:interceptors>
+
+
+
+
+
+</beans>
